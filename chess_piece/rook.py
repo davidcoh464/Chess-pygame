@@ -6,7 +6,7 @@ import numpy as np
 
 class Rook(Piece):
     def __init__(self, is_white: bool, pos: Tuple[int, int]):
-        super().__init__('q', is_white, pos)
+        super().__init__('r', is_white, pos)
         self._straight_move = StraightMove(is_white)
 
     def get_attack_moves(self, board: np.ndarray) -> List[Tuple[int, int]]:
