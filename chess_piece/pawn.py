@@ -12,8 +12,8 @@ class Pawn(Piece):
     def get_peace_moves(self, board: np.ndarray) -> List[Tuple[int, int]]:
         moves = []
         pos = self.get_position()
-        front_pos = (pos[0] + self.direction, pos[1])
 
+        front_pos = (pos[0] + self.direction, pos[1])
         if Piece.legal_peace_move(board, front_pos):
             moves.append(front_pos)
             two_squares_front = (pos[0] + 2 * self.direction, pos[1])
@@ -33,3 +33,7 @@ class Pawn(Piece):
         if Piece.legal_attack_move(board, right_diagonal, self.is_white()):
             moves.append(right_diagonal)
         return moves
+
+    def is_promote_location(self) -> bool:
+        return (self.starting_point == 1 and self.get_position()[0] == 7) or\
+            (self.starting_point == 6 and self.get_position()[0] == 0)
