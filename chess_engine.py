@@ -19,6 +19,9 @@ class ChessEngine:
     def is_check(self):
         return self._chess_board.is_check()
 
+    def get_turn(self) -> str:
+        return 'white' if self._chess_board.is_white_turn() else 'black'
+
     def move_piece(self, src_pos: tuple[int, int], dst_pos: tuple[int, int]) -> None:
         self._game_status.append([src_pos, dst_pos,
                                   self._chess_board.get_piece(src_pos), self._chess_board.get_piece(dst_pos)])
