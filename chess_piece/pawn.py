@@ -1,6 +1,5 @@
 from chess_piece import Piece
-from typing import Tuple, List
-import numpy as np
+from typing import Tuple, List, Optional
 
 
 class Pawn(Piece):
@@ -9,7 +8,7 @@ class Pawn(Piece):
         self.direction = -1 if self.is_white() else 1
         self.starting_point = 6 if self.is_white() else 1
 
-    def get_peace_moves(self, board: np.ndarray) -> List[Tuple[int, int]]:
+    def get_peace_moves(self, board: List[List[Optional[Piece]]]) -> List[Tuple[int, int]]:
         moves = []
         pos = self.get_position()
 
@@ -21,7 +20,7 @@ class Pawn(Piece):
                 moves.append(two_squares_front)
         return moves
 
-    def get_attack_moves(self, board: np.ndarray) -> List[Tuple[int, int]]:
+    def get_attack_moves(self, board: List[List[Optional[Piece]]]) -> List[Tuple[int, int]]:
         moves = []
         pos = self.get_position()
 

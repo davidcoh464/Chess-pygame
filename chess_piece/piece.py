@@ -1,5 +1,4 @@
-from typing import Tuple, List
-import numpy as np
+from typing import Tuple, List, Optional
 
 
 class Piece:
@@ -28,18 +27,18 @@ class Piece:
         return 0 <= pos[0] < 8 and 0 <= pos[1] < 8
 
     @staticmethod
-    def legal_attack_move(board: np.ndarray, pos: Tuple[int, int], is_white: bool) -> bool:
-        return Piece.board_position(pos) and board[pos] is not None and board[pos].is_white() != is_white
+    def legal_attack_move(board: List[List[Optional['Piece']]], pos: Tuple[int, int], is_white: bool) -> bool:
+        return Piece.board_position(pos) and board[pos[0]][pos[1]] is not None and board[pos[0]][pos[1]].is_white() != is_white
 
     @staticmethod
-    def legal_peace_move(board: np.ndarray, pos: Tuple[int, int]):
-        return Piece.board_position(pos) and board[pos] is None
+    def legal_peace_move(board: List[List[Optional['Piece']]], pos: Tuple[int, int]):
+        return Piece.board_position(pos) and board[pos[0]][pos[1]] is None
 
-    def get_all_moves(self, board: np.ndarray) -> List[Tuple[int, int]]:
+    def get_all_moves(self, board: List[List[Optional['Piece']]]) -> List[Tuple[int, int]]:
         return self.get_attack_moves(board) + self.get_peace_moves(board)
 
-    def get_attack_moves(self, board: np.ndarray) -> List[Tuple[int, int]]:
+    def get_attack_moves(self, board: List[List[Optional['Piece']]]) -> List[Tuple[int, int]]:
         pass
 
-    def get_peace_moves(self, board: np.ndarray) -> List[Tuple[int, int]]:
+    def get_peace_moves(self, board: List[List[Optional['Piece']]]) -> List[Tuple[int, int]]:
         pass

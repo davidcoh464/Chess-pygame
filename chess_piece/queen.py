@@ -1,7 +1,6 @@
 from chess_move import DiagonalMove, StraightMove
 from chess_piece import Piece
-from typing import Tuple, List
-import numpy as np
+from typing import Tuple, List, Optional
 
 
 class Queen(Piece):
@@ -10,10 +9,10 @@ class Queen(Piece):
         self._diagonal_move = DiagonalMove(is_white)
         self._straight_move = StraightMove(is_white)
 
-    def get_attack_moves(self, board: np.ndarray) -> List[Tuple[int, int]]:
+    def get_attack_moves(self, board: List[List[Optional[Piece]]]) -> List[Tuple[int, int]]:
         return self._diagonal_move.get_attack_moves(board, pos=self.get_position()) + \
             self._straight_move.get_attack_moves(board, pos=self.get_position())
 
-    def get_peace_moves(self, board: np.ndarray) -> List[Tuple[int, int]]:
+    def get_peace_moves(self, board: List[List[Optional[Piece]]]) -> List[Tuple[int, int]]:
         return self._diagonal_move.get_peace_moves(board, pos=self.get_position()) + \
             self._straight_move.get_peace_moves(board, pos=self.get_position())

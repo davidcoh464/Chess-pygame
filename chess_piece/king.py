@@ -1,7 +1,6 @@
 from chess_piece import Piece
 from chess_move import DiagonalMove, StraightMove, KingMove, HorseMove
 from typing import Tuple, List, Optional
-import numpy as np
 
 
 class King(Piece):
@@ -12,31 +11,31 @@ class King(Piece):
         self._horse_move = HorseMove(is_white)
         self._king_move = KingMove(is_white)
 
-    def get_peace_moves(self, board: np.ndarray[Optional[Piece]]) -> List[Tuple[int, int]]:
+    def get_peace_moves(self, board: List[List[Optional[Piece]]]) -> List[Tuple[int, int]]:
         return self._king_move.get_peace_moves(board, self.get_position())
 
-    def get_attack_moves(self, board: np.ndarray[Optional[Piece]]) -> List[Tuple[int, int]]:
+    def get_attack_moves(self, board: List[List[Optional[Piece]]]) -> List[Tuple[int, int]]:
         return self._king_move.get_attack_moves(board, self.get_position())
 
-    def is_check(self, board: np.ndarray[Optional[Piece]]) -> bool:
+    def is_check(self, board: List[List[Optional[Piece]]]) -> bool:
         pos = self.get_position()
 
         for index in self._diagonal_move.get_attack_moves(board, pos):
-            name = board[index].get_name()
+            name = board[index[0]][index[1]].get_name()
             if name in ['q', 'b']:
                 return True
-            if name == 'p' and pos in board[index].get_attack_moves(board):
+            if name == 'p' and pos in board[index[0]][index[1]].get_attack_moves(board):
                 return True
 
         for index in self._straight_move.get_attack_moves(board, pos):
-            if board[index].get_name() in ['q', 'r']:
+            if board[index[0]][index[1]].get_name() in ['q', 'r']:
                 return True
 
         for index in self._king_move.get_attack_moves(board, pos):
-            if board[index].get_name() == 'k':
+            if board[index[0]][index[1]].get_name() == 'k':
                 return True
 
         for index in self._horse_move.get_attack_moves(board, pos):
-            if board[index].get_name() == 'n':
+            if board[index[0]][index[1]].get_name() == 'n':
                 return True
         return False

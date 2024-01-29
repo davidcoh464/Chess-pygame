@@ -1,5 +1,4 @@
-from typing import Tuple, List
-import numpy as np
+from typing import Tuple, List, Optional
 from chess_piece import Piece
 
 
@@ -8,7 +7,7 @@ class PreciseMove:
         self._possible_directions = possible_directions
         self._is_white = is_white
 
-    def get_attack_moves(self, board: np.ndarray, pos: Tuple[int, int]) -> List[Tuple[int, int]]:
+    def get_attack_moves(self, board: List[List[Optional[Piece]]], pos: Tuple[int, int]) -> List[Tuple[int, int]]:
         moves = []
         for i, j in self._possible_directions:
             current_pos = (pos[0] + i, pos[1] + j)
@@ -16,7 +15,7 @@ class PreciseMove:
                 moves.append(current_pos)
         return moves
 
-    def get_peace_moves(self, board: np.ndarray, pos: Tuple[int, int]) -> List[Tuple[int, int]]:
+    def get_peace_moves(self, board: List[List[Optional[Piece]]], pos: Tuple[int, int]) -> List[Tuple[int, int]]:
         moves = []
         for i, j in self._possible_directions:
             current_pos = (pos[0] + i, pos[1] + j)
