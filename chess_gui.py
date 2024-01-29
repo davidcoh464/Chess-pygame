@@ -7,7 +7,7 @@ from const import *
 pg.font.init()
 WIN = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
 BOARD = pg.transform.scale(pg.image.load(os.path.join("Assets", "board.png")), (WIN_WIDTH, WIN_HEIGHT))
-WINNER_FONT = pg.font.SysFont("Helvitca", 100, True, False)
+FONT = pg.font.SysFont("Helvitca", 90, bold=True)
 PIECE_IMAGE = {}
 
 
@@ -54,7 +54,7 @@ def draw_window(chess_engine: ChessEngine):
 
 
 def draw_text(text):
-    text_render = WINNER_FONT.render(text, True, GREEN, BLUE)
+    text_render = FONT.render(text, True, GREEN, BLUE)
     WIN.blit(text_render, (WIN_WIDTH//2 - text_render.get_width()//2, WIN_HEIGHT//2 - text_render.get_height()//2))
     pg.display.flip()
 
@@ -69,24 +69,25 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 run = False
-                break
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_q:
                     chess_engine.undo_move()
             elif event.type == pg.MOUSEBUTTONDOWN:
-                location = pg.mouse.get_pos()
-                chess_engine.on_board_click((location[1] // SQ_SIZE[1], location[0] // SQ_SIZE[0]))
+                chess_engine.on_board_click((event.pos[1] // SQ_SIZE[1], event.pos[0] // SQ_SIZE[0]))
 
         if chess_engine.board_change:
             draw_window(chess_engine)
             chess_engine.board_change = False
         if chess_engine.moving_update:
-
             if chess_engine.is_game_end():
                 draw_text(chess_engine.game_end_status())
                 pg.time.delay(3000)
                 run = False
-            chess_engine.moving_update = False
+            elif chess_engine.is_check():
+                draw_text(f"{chess_engine.get_turn()} check")
+                pg.time.delay(1000)
+                chess_engine.board_change = True
+        chess_engine.moving_update = False
     pg.quit()
 
 
