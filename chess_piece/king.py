@@ -13,7 +13,7 @@ class King(Piece):
         self._move_counter = 0
 
     def get_peace_moves(self, board: List[List[Optional[Piece]]]) -> List[Tuple[int, int]]:
-        return self._king_move.get_peace_moves(board, self.get_position())
+        return self._king_move.get_peace_moves(board, self.get_position()) + self.castle_move(board)
 
     def get_attack_moves(self, board: List[List[Optional[Piece]]]) -> List[Tuple[int, int]]:
         return self._king_move.get_attack_moves(board, self.get_position())
