@@ -1,4 +1,4 @@
-from chess_piece import Piece
+from chess_piece import Piece, Rook
 from chess_move import DiagonalMove, StraightMove, KingMove, HorseMove
 from typing import Tuple, List, Optional
 
@@ -10,6 +10,7 @@ class King(Piece):
         self._straight_move = StraightMove(is_white)
         self._horse_move = HorseMove(is_white)
         self._king_move = KingMove(is_white)
+        self._move_counter = 0
 
     def get_peace_moves(self, board: List[List[Optional[Piece]]]) -> List[Tuple[int, int]]:
         return self._king_move.get_peace_moves(board, self.get_position())
@@ -39,3 +40,27 @@ class King(Piece):
             if board[index[0]][index[1]].get_name() == 'n':
                 return True
         return False
+
+    def increase_moves_counter(self):
+        self._move_counter += 1
+
+    def decrease_moves_counter(self):
+        self._move_counter -= 1
+
+    def has_moved(self) -> bool:
+        return self._move_counter != 0
+
+    def castle_move(self, board: List[List[Optional[Piece]]]) -> List[Tuple[int, int]]:
+        rook1: Optional[Piece | Rook] = board[self._pos[0]][0]
+        rook2: Optional[Piece | Rook] = board[self._pos[0]][7]
+        moves = []
+        if not self.has_moved():
+            if rook1 and rook1.get_name() == 'r' and not rook1.has_moved() and\
+                    all(board[self._pos[0]][col] is None for col in range(1, self._pos[1]))\
+                    and not self.is_check(board):
+                moves.append((self._pos[0], self._pos[1] - 2))
+            if rook2 and rook2.get_name() == 'r' and not rook2.has_moved() and \
+                    all(board[self._pos[0]][col] is None for col in range(self._pos[1] + 1, 7))\
+                    and (len(moves) == 1 or not self.is_check(board)):
+                moves.append((self._pos[0], self._pos[1] + 2))
+        return moves
