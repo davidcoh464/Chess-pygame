@@ -6,15 +6,15 @@ class ChessBoard:
     def __init__(self):
         self._board: List[List[Optional[Piece]]] = [[None] * 8 for _ in range(8)]
         self._is_white_turn = True
-        self._white_king_location = (7, 3)
-        self._black_king_location = (0, 3)
+        self._white_king_location = (7, 4)
+        self._black_king_location = (0, 4)
 
-        piece_order = [Rook, Knight, Bishop, King, Queen, Bishop, Knight, Rook]
-        for row, is_white in zip([0, 7], [False, True]):
+        piece_order = [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]
+        for row, is_white in [(0, False), (7, True)]:
             for col, piece_class in enumerate(piece_order):
                 self._board[row][col] = piece_class(is_white=is_white, pos=(row, col))
 
-        for row, is_white in zip([1, 6], [False, True]):
+        for row, is_white in [(1, False), (6, True)]:
             for col in range(8):
                 self._board[row][col] = Pawn(is_white=is_white, pos=(row, col))
 
@@ -50,7 +50,6 @@ class ChessBoard:
             self._black_king_location = pos
 
     def is_check(self) -> bool:
-        # checking for check, by checking from the king to the other pieces
         pos = self._get_king_location()
         piece: Optional[Union[Piece, King]] = self._board[pos[0]][pos[1]]
         return piece.is_check(self._board)
@@ -67,15 +66,15 @@ class ChessBoard:
         return self.get_piece_peace_moves(pos) + self.get_piece_attack_moves(pos)
 
     def get_piece_peace_moves(self, pos: Tuple[int, int]) -> List[Tuple[int, int]]:
-        if self._board[pos[0]][pos[1]] is not None:
-            return [index for index in self._board[pos[0]][pos[1]].get_peace_moves(self._board)
-                    if not self.is_check_move(pos, index)]
+        piece: Optional[Piece] = self._board[pos[0]][pos[1]]
+        if piece is not None:
+            return [index for index in piece.get_peace_moves(self._board) if not self.is_check_move(pos, index)]
         return []
 
     def get_piece_attack_moves(self, pos: Tuple[int, int]) -> List[Tuple[int, int]]:
-        if self._board[pos[0]][pos[1]] is not None:
-            return [index for index in self._board[pos[0]][pos[1]].get_attack_moves(self._board)
-                    if not self.is_check_move(pos, index)]
+        piece: Optional[Piece] = self._board[pos[0]][pos[1]]
+        if piece is not None:
+            return [index for index in piece.get_attack_moves(self._board) if not self.is_check_move(pos, index)]
         return []
 
     def move_piece(self, src_pos: Tuple[int, int], dst_pos: Tuple[int, int]):
@@ -84,15 +83,33 @@ class ChessBoard:
         self._board[src_pos[0]][src_pos[1]] = None
         if src_pic is not None:
             src_pic.set_position(dst_pos)
-            if src_pic.get_name() == 'k':
+            if isinstance(src_pic, King):
                 self._set_king_location(dst_pos)
+                src_pic.increase_moves_counter()
+                # if is a castle move
+                if src_pos[1] - dst_pos[1] == 2:
+                    self.move_piece((src_pos[0], 0), (src_pos[0], src_pos[1] - 1))
+                elif dst_pos[1] - src_pos[1] == 2:
+                    self.move_piece((src_pos[0], 7), (src_pos[0], src_pos[1] + 1))
+            elif isinstance(src_pic, Rook):
+                src_pic.increase_moves_counter()
 
     def undo_move(self, src_pos: Tuple[int, int], dst_pos: Tuple[int, int],
                   src_pic: Optional[Piece], dst_pic: Optional[Piece]):
         if src_pic is not None:
             src_pic.set_position(src_pos)
-            if src_pic.get_name() == 'k':
+            if isinstance(src_pic, King):
                 self._set_king_location(src_pos)
+                src_pic.decrease_moves_counter()
+                # undo castle move
+                if src_pos[1] - dst_pos[1] == 2:
+                    self.undo_move((src_pos[0], 0), (src_pos[0], src_pos[1] - 1),
+                                   self._board[src_pos[0]][src_pos[1] - 1], self._board[src_pos[0]][0])
+                elif dst_pos[1] - src_pos[1] == 2:
+                    self.undo_move((src_pos[0], 7), (src_pos[0], src_pos[1] + 1),
+                                   self._board[src_pos[0]][src_pos[1] + 1], self._board[src_pos[0]][7])
+            if isinstance(src_pic, Rook):
+                src_pic.decrease_moves_counter()
         self._board[src_pos[0]][src_pos[1]] = src_pic
         self._board[dst_pos[0]][dst_pos[1]] = dst_pic
 
