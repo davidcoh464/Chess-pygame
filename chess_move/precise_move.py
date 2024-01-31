@@ -24,7 +24,7 @@ class PreciseMove:
         return moves
 
 
-class HorseMove(PreciseMove):
+class KnightMove(PreciseMove):
     def __init__(self, is_white: bool):
         super().__init__(is_white=is_white,
                          possible_directions=[(-2, -1), (-2, 1), (2, 1), (2, -1),

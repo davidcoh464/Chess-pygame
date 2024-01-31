@@ -1,5 +1,5 @@
 from chess_piece import Piece, Rook
-from chess_move import DiagonalMove, StraightMove, KingMove, HorseMove
+from chess_move import DiagonalMove, StraightMove, KingMove, KnightMove
 from typing import Tuple, List, Optional
 
 
@@ -8,7 +8,7 @@ class King(Piece):
         super().__init__('k', is_white, pos)
         self._diagonal_move = DiagonalMove(is_white)
         self._straight_move = StraightMove(is_white)
-        self._horse_move = HorseMove(is_white)
+        self._knight_move = KnightMove(is_white)
         self._king_move = KingMove(is_white)
         self._move_counter = 0
 
@@ -36,7 +36,7 @@ class King(Piece):
             if board[index[0]][index[1]].get_name() == 'k':
                 return True
 
-        for index in self._horse_move.get_attack_moves(board, pos):
+        for index in self._knight_move.get_attack_moves(board, pos):
             if board[index[0]][index[1]].get_name() == 'n':
                 return True
         return False
