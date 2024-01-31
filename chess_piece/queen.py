@@ -4,7 +4,16 @@ from typing import Tuple, List, Optional
 
 
 class Queen(Piece):
+    """
+    Represents a Queen chess piece.
+    """
     def __init__(self, is_white: bool, pos: Tuple[int, int]):
+        """
+        Initializes a Queen instance.
+        Args:
+            is_white (bool): Indicates whether the queen is white.
+            pos (Tuple[int, int]): The initial position of the queen on the chessboard.
+        """
         super().__init__('q', is_white, pos)
         self._diagonal_move = DiagonalMove(is_white)
         self._straight_move = StraightMove(is_white)

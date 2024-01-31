@@ -4,7 +4,16 @@ from typing import Tuple, List, Optional
 
 
 class Bishop(Piece):
+    """
+    Represents a Bishop chess piece.
+    """
     def __init__(self, is_white: bool, pos: Tuple[int, int]):
+        """
+        Initializes a Bishop instance.
+        Args:
+            is_white (bool): Indicates whether the bishop is white.
+            pos (Tuple[int, int]): The initial position of the bishop on the chessboard.
+        """
         super().__init__('b', is_white, pos)
         self.moves = DiagonalMove(is_white)
 

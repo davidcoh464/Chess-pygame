@@ -4,7 +4,16 @@ from typing import Tuple, List, Optional
 
 
 class Knight(Piece):
+    """
+    Represents a Knight chess piece.
+    """
     def __init__(self, is_white: bool, pos: Tuple[int, int]):
+        """
+        Initializes a Knight instance.
+        Args:
+            is_white (bool): Indicates whether the knight is white.
+            pos (Tuple[int, int]): The initial position of the knight on the chessboard.
+        """
         super().__init__('n', is_white, pos)
         self.horse_move = KnightMove(is_white)
 

@@ -12,6 +12,11 @@ PIECE_IMAGE = {}
 
 
 def load_screen():
+    """
+    Load the initial screen settings, set the window caption and icon, and load piece images.
+    This function initializes the Pygame display settings, sets the window caption and icon,
+    and loads the images of chess pieces.
+    """
     pg.display.set_caption("Chess")
     pg.display.set_icon(pg.image.load(os.path.join('Assets', 'chess_icon.png')))
     for p in PIECES:
@@ -19,6 +24,11 @@ def load_screen():
 
 
 def draw_pieces(chess_engine: ChessEngine):
+    """
+    Draw chess pieces on the game window.
+    Args:
+        chess_engine (ChessEngine): The instance of the ChessEngine class representing the game state.
+    """
     for row in range(DIMENSION):
         for col in range(DIMENSION):
             piece_name = chess_engine.get_piece_name((row, col))
@@ -29,6 +39,11 @@ def draw_pieces(chess_engine: ChessEngine):
 
 
 def highlight_selected_square(square_selected: Tuple[int, int]):
+    """
+    Highlight the currently selected square on the game window.
+    Args:
+        square_selected (Tuple[int, int]): The coordinates (row, col) of the selected square.
+    """
     surface = pg.Surface(SQ_SIZE)
     surface.set_alpha(60)
     surface.fill(BLUE)
@@ -36,6 +51,11 @@ def highlight_selected_square(square_selected: Tuple[int, int]):
 
 
 def highlight_moves_squares(valid_moves: List[Tuple[int, int]]):
+    """
+    Highlight the squares representing valid moves on the game window.
+    Args:
+        valid_moves (List[Tuple[int, int]]): List of coordinates (row, col) representing valid moves.
+    """
     surface = pg.Surface(SQ_SIZE)
     surface.set_alpha(60)
     surface.fill(GREEN)
@@ -44,6 +64,11 @@ def highlight_moves_squares(valid_moves: List[Tuple[int, int]]):
 
 
 def draw_window(chess_engine: ChessEngine):
+    """
+    Draw the entire game window, including the chessboard and pieces.
+    Args:
+        chess_engine (ChessEngine): The instance of the ChessEngine class representing the game state.
+    """
     WIN.blit(BOARD, (0, 0))
     if chess_engine.selected_square != ():
         highlight_selected_square(chess_engine.selected_square)
@@ -54,12 +79,21 @@ def draw_window(chess_engine: ChessEngine):
 
 
 def draw_text(text):
+    """
+    Draw text on the game window.
+    Args:
+        text (str): The text to be displayed on the window.
+    """
     text_render = FONT.render(text, True, GREEN, BLUE)
     WIN.blit(text_render, (WIN_WIDTH//2 - text_render.get_width()//2, WIN_HEIGHT//2 - text_render.get_height()//2))
     pg.display.flip()
 
 
 def main():
+    """
+    The main loop of the chess game.
+    This function initializes the game, handles user input, and continuously updates the game window.
+    """
     load_screen()
     chess_engine = ChessEngine()
     clock = pg.time.Clock()
