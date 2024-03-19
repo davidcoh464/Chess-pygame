@@ -7,7 +7,8 @@ class ChessBoard:
         """
         Initializes a ChessBoard instance with the starting position.
         """
-        self._board: List[List[Optional[Piece]]] = [[None] * 8 for _ in range(8)]
+        self._rows = tuple(range(8))
+        self._board: List[List[Optional[Piece]]] = [[None] * 8 for _ in self._rows]
         self._is_white_turn = True
         self._white_king_location = (7, 4)
         self._black_king_location = (0, 4)
@@ -18,7 +19,7 @@ class ChessBoard:
                 self._board[row][col] = piece_class(is_white=is_white, pos=(row, col))
 
         for row, is_white in [(1, False), (6, True)]:
-            for col in range(8):
+            for col in self._rows:
                 self._board[row][col] = Pawn(is_white=is_white, pos=(row, col))
 
     def is_white_turn(self) -> bool:
@@ -103,7 +104,9 @@ class ChessBoard:
         """
         pos = self._get_king_location()
         piece: Optional[King] = self._board[pos[0]][pos[1]]
-        return piece.is_check(self._board)
+        if piece:
+            return piece.is_check(self._board)
+        return False
 
     def is_check_move(self, src_pos: Tuple[int, int], dst_pos: Tuple[int, int]):
         """
@@ -157,6 +160,16 @@ class ChessBoard:
             return [index for index in piece.get_attack_moves(self._board) if not self.is_check_move(pos, index)]
         return []
 
+    def get_all_moves(self) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
+        all_moves = []
+        for row in self._rows:
+            for col in self._rows:
+                src_pos = (row, col)
+                piece = self.get_piece(src_pos)
+                if piece and piece.is_white() == self.is_white_turn():
+                    all_moves.extend([(src_pos, dst_pos) for dst_pos in self.get_piece_moves(src_pos)])
+        return all_moves
+
     def move_piece(self, src_pos: Tuple[int, int], dst_pos: Tuple[int, int]):
         """
         Moves a piece from the source position to the destination position.
@@ -167,9 +180,9 @@ class ChessBoard:
         src_pic: Optional[Piece] = self._board[src_pos[0]][src_pos[1]]
         self._board[dst_pos[0]][dst_pos[1]] = src_pic
         self._board[src_pos[0]][src_pos[1]] = None
-        if src_pic is not None:
+        if src_pic:
             src_pic.set_position(dst_pos)
-            if isinstance(src_pic, King):
+            if src_pic.get_name() == 'k' and isinstance(src_pic, King):
                 self._set_king_location(dst_pos)
                 src_pic.increase_moves_counter()
                 # if is a castle move
@@ -177,7 +190,7 @@ class ChessBoard:
                     self.move_piece((src_pos[0], 0), (src_pos[0], src_pos[1] - 1))
                 elif dst_pos[1] - src_pos[1] == 2:
                     self.move_piece((src_pos[0], 7), (src_pos[0], src_pos[1] + 1))
-            elif isinstance(src_pic, Rook):
+            elif src_pic.get_name() == 'r' and isinstance(src_pic, Rook):
                 src_pic.increase_moves_counter()
 
     def undo_move(self, src_pos: Tuple[int, int], dst_pos: Tuple[int, int],
@@ -190,9 +203,9 @@ class ChessBoard:
             src_pic (Optional[Piece]): The piece that was at the source position before the move.
             dst_pic (Optional[Piece]): The piece that was at the destination position before the move.
         """
-        if src_pic is not None:
+        if src_pic:
             src_pic.set_position(src_pos)
-            if isinstance(src_pic, King):
+            if src_pic.get_name() == 'k' and isinstance(src_pic, King):
                 self._set_king_location(src_pos)
                 src_pic.decrease_moves_counter()
                 # undo castle move
@@ -202,7 +215,7 @@ class ChessBoard:
                 elif dst_pos[1] - src_pos[1] == 2:
                     self.undo_move((src_pos[0], 7), (src_pos[0], src_pos[1] + 1),
                                    self._board[src_pos[0]][src_pos[1] + 1], self._board[src_pos[0]][7])
-            elif isinstance(src_pic, Rook):
+            elif src_pic.get_name() == 'r' and isinstance(src_pic, Rook):
                 src_pic.decrease_moves_counter()
         self._board[src_pos[0]][src_pos[1]] = src_pic
         self._board[dst_pos[0]][dst_pos[1]] = dst_pic
@@ -213,23 +226,23 @@ class ChessBoard:
         Returns:
             bool: True if the game has ended, False otherwise.
         """
-        for row in range(8):
-            for col in range(8):
+        for row in self._rows:
+            for col in self._rows:
                 pos = (row, col)
                 if self.is_white_piece(pos) == self.is_white_turn():
                     if self.get_piece_moves(pos):
                         return False
         return True
 
-    def game_end_status(self) -> str:
+    def game_end_status(self) -> int:
         """
-        Returns the status of the game at the end: 'Black won', 'White won', or 'Stalemate'.
+        Returns the status of the game at the end: 0 for 'Black won', and 1 if 'White won', or 2 if 'Stalemate'.
         Returns:
-            str: The status of the game at the end.
+            int: The status of the game at the end.
         """
         if self.is_check():
-            return 'Black won' if self.is_white_turn() else 'White won'
-        return 'Stalemate'
+            return 0 if self.is_white_turn() else 1
+        return 2
 
     def promote_pawn(self, pos: Tuple[int, int]):
         """
