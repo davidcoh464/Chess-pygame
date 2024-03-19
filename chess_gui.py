@@ -2,6 +2,7 @@ import pygame as pg
 from chess_engine import ChessEngine
 from typing import List, Tuple
 import os
+import threading
 from const import *
 
 pg.font.init()
@@ -95,32 +96,54 @@ def main():
     This function initializes the game, handles user input, and continuously updates the game window.
     """
     load_screen()
-    chess_engine = ChessEngine()
+    chess_engine = ChessEngine(is_human_white=True)
     clock = pg.time.Clock()
     run = True
+
+    is_game_end = False
+    game_end_time = 0
+
+    is_check = False
+    game_check_time = 0
+
     while run:
         clock.tick(FPS)
+        if not is_game_end and chess_engine.is_ai_turn() and not chess_engine.is_ai_running():
+            thread_ai_move = threading.Thread(target=ChessEngine.move_ai, args=(chess_engine,), daemon=True)
+            thread_ai_move.start()
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 run = False
+            elif is_game_end:
+                if pg.time.get_ticks() - game_end_time > 10000:
+                    run = False
+                    break
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_q:
                     chess_engine.undo_move()
-            elif event.type == pg.MOUSEBUTTONDOWN:
+            elif not chess_engine.is_ai_turn() and event.type == pg.MOUSEBUTTONDOWN:
                 chess_engine.on_board_click((event.pos[1] // SQ_SIZE[1], event.pos[0] // SQ_SIZE[0]))
+
+        if is_check:
+            if pg.time.get_ticks() - game_check_time > 1000:
+                is_check = False
+                chess_engine.board_change = True
+            elif chess_engine.board_change or chess_engine.moving_update:
+                is_check = False
 
         if chess_engine.board_change:
             draw_window(chess_engine)
             chess_engine.board_change = False
+
         if chess_engine.moving_update:
             if chess_engine.is_game_end():
                 draw_text(chess_engine.game_end_status())
-                pg.time.delay(3000)
-                run = False
+                game_end_time = pg.time.get_ticks()
+                is_game_end = True
             elif chess_engine.is_check():
                 draw_text(f"{chess_engine.get_turn()} check")
-                pg.time.delay(1000)
-                chess_engine.board_change = True
+                is_check = True
+                game_check_time = pg.time.get_ticks()
         chess_engine.moving_update = False
     pg.quit()
 
