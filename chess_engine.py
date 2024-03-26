@@ -16,7 +16,7 @@ class ChessEngine:
         self._chess_board = ChessBoard()
         self._stop_ai_event = threading.Event()
         self._is_human_white = is_human_white
-        self.ai_run = False
+        self._ai_run = False
         self._ai_engine = ChessAI(stop_event=self._stop_ai_event)
 
     def get_piece_name(self, pos: tuple[int, int]):
@@ -55,24 +55,48 @@ class ChessEngine:
         """
         return 'white' if self._chess_board.is_white_turn() else 'black'
 
-    def is_stop_set(self):
+    def is_stop_set(self) -> bool:
+        """
+        Checks if the stop event for the AI engine is set.
+        Returns:
+            bool: True if the stop event is set, indicating that the AI should stop processing, False otherwise.
+        """
         return self._stop_ai_event.is_set()
 
-    def set_stop_ai(self):
+    def set_stop_ai(self) -> None:
+        """
+        Sets the stop event for the AI engine.
+        """
         self._stop_ai_event.set()
 
-    def unset_stop_ai(self):
+    def unset_stop_ai(self) -> None:
+        """
+        Unsets the stop event for the AI engine.
+        """
         self._stop_ai_event.clear()
 
-    def is_ai_turn(self):
+    def is_ai_turn(self) -> bool:
+        """
+        Checks if it's the AI's turn to make a move.
+        Returns:
+            bool: True if it's the AI's turn, False if it's the human player's turn.
+        """
         return self._chess_board.is_white_turn() != self._is_human_white
 
-    def is_ai_running(self):
-        return self.ai_run
+    def is_ai_running(self) -> bool:
+        """
+        Checks if the AI engine is currently running.
+        Returns:
+            bool: True if the AI engine is running, False otherwise.
+        """
+        return self._ai_run
 
-    def move_ai(self):
+    def move_ai(self) -> None:
+        """
+        Executes the AI engine to make a move if it's the AI's turn.
+        """
         if self.is_ai_turn():
-            self.ai_run = True
+            self._ai_run = True
 
             if self.is_stop_set():
                 self.unset_stop_ai()
@@ -86,7 +110,7 @@ class ChessEngine:
             else:
                 self.unset_stop_ai()
 
-            self.ai_run = False
+            self._ai_run = False
 
     def move_piece(self, src_pos: tuple[int, int], dst_pos: tuple[int, int]) -> None:
         """

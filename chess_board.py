@@ -161,6 +161,12 @@ class ChessBoard:
         return []
 
     def get_all_moves(self) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
+        """
+        Get all possible moves for the pieces of the current player.
+        Returns:
+            List[Tuple[Tuple[int, int], Tuple[int, int]]]: A list of tuples representing all possible moves.
+                Each tuple contains the source position and destination position of a valid move.
+        """
         all_moves = []
         for row in self._rows:
             for col in self._rows:
