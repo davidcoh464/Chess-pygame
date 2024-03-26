@@ -1,8 +1,10 @@
+import threading
 from chess_board import ChessBoard
+from chess_ai import ChessAI
 
 
 class ChessEngine:
-    def __init__(self):
+    def __init__(self, is_human_white: bool):
         """
         Initializes a ChessEngine instance.
         """
@@ -12,6 +14,10 @@ class ChessEngine:
         self.moving_update = False
         self._game_status = []
         self._chess_board = ChessBoard()
+        self._stop_ai_event = threading.Event()
+        self._is_human_white = is_human_white
+        self._ai_run = False
+        self._ai_engine = ChessAI(stop_event=self._stop_ai_event)
 
     def get_piece_name(self, pos: tuple[int, int]):
         """
@@ -49,6 +55,63 @@ class ChessEngine:
         """
         return 'white' if self._chess_board.is_white_turn() else 'black'
 
+    def is_stop_set(self) -> bool:
+        """
+        Checks if the stop event for the AI engine is set.
+        Returns:
+            bool: True if the stop event is set, indicating that the AI should stop processing, False otherwise.
+        """
+        return self._stop_ai_event.is_set()
+
+    def set_stop_ai(self) -> None:
+        """
+        Sets the stop event for the AI engine.
+        """
+        self._stop_ai_event.set()
+
+    def unset_stop_ai(self) -> None:
+        """
+        Unsets the stop event for the AI engine.
+        """
+        self._stop_ai_event.clear()
+
+    def is_ai_turn(self) -> bool:
+        """
+        Checks if it's the AI's turn to make a move.
+        Returns:
+            bool: True if it's the AI's turn, False if it's the human player's turn.
+        """
+        return self._chess_board.is_white_turn() != self._is_human_white
+
+    def is_ai_running(self) -> bool:
+        """
+        Checks if the AI engine is currently running.
+        Returns:
+            bool: True if the AI engine is running, False otherwise.
+        """
+        return self._ai_run
+
+    def move_ai(self) -> None:
+        """
+        Executes the AI engine to make a move if it's the AI's turn.
+        """
+        if self.is_ai_turn():
+            self._ai_run = True
+
+            if self.is_stop_set():
+                self.unset_stop_ai()
+            self._ai_engine.find_best_move(self._chess_board)
+
+            move = self._ai_engine.best_move
+            if not self.is_stop_set() and move is not None:
+                self.move_piece(move[0], move[1])
+                self.moving_update = True
+                self.board_change = True
+            else:
+                self.unset_stop_ai()
+
+            self._ai_run = False
+
     def move_piece(self, src_pos: tuple[int, int], dst_pos: tuple[int, int]) -> None:
         """
         Moves a piece on the chessboard and updates the game state.
@@ -66,9 +129,17 @@ class ChessEngine:
         Undoes the last move and restores the previous game state.
         """
         if len(self._game_status) > 0:
+            if self.is_ai_turn():
+                self.set_stop_ai()
             self._chess_board.change_turn()
             [src_pos, dst_pos, src_pic, dst_pic] = self._game_status.pop()
             self._chess_board.undo_move(src_pos, dst_pos, src_pic, dst_pic)
+
+            if len(self._game_status) > 0 and self._is_human_white != self._chess_board.is_white_turn():
+                self._chess_board.change_turn()
+                [src_pos, dst_pos, src_pic, dst_pic] = self._game_status.pop()
+                self._chess_board.undo_move(src_pos, dst_pos, src_pic, dst_pic)
+
             self.board_change = True
             self.selected_square = ()
             self.available_moves = []
@@ -97,7 +168,8 @@ class ChessEngine:
         Returns:
             str: The status of the game at the end.
         """
-        return self._chess_board.game_end_status()
+        status = self._chess_board.game_end_status()
+        return "Black won" if status == 0 else 'White won' if status == 1 else 'Stalemate'
 
     def on_board_click(self, pos: tuple[int, int]):
         """
