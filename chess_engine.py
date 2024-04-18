@@ -91,6 +91,28 @@ class ChessEngine:
         """
         return self._ai_run
 
+    def increase_depth(self) -> int:
+        """
+        Increase the maximum search depth for the AI algorithm.
+
+        This method increases the maximum search depth for the AI algorithm by one level, up to a maximum of 4.
+        Returns:
+            int: The new maximum search depth after increasing.
+        """
+        self._ai_engine.max_depth = min(4, self._ai_engine.max_depth + 1)
+        return self._ai_engine.max_depth
+
+    def decrease_depth(self) -> int:
+        """
+        Decrease the maximum search depth for the AI algorithm.
+
+        This method decreases the maximum search depth for the AI algorithm by one level, down to a minimum of 2.
+        Returns:
+            int: The new maximum search depth after decreasing.
+        """
+        self._ai_engine.max_depth = max(2, self._ai_engine.max_depth - 1)
+        return self._ai_engine.max_depth
+
     def move_ai(self) -> None:
         """
         Executes the AI engine to make a move if it's the AI's turn.
