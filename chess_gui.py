@@ -11,6 +11,19 @@ BOARD = pg.transform.scale(pg.image.load(os.path.join("Assets", "board.png")), (
 FONT = pg.font.SysFont("Helvitca", 90, bold=True)
 PIECE_IMAGE = {}
 
+KEY_COLOR_MAPPING = {
+    pg.K_0: "image",
+    pg.K_1: LIME_GREEN,
+    pg.K_2: DARK_GRAY,
+    pg.K_3: GREEN_GRAY,
+    pg.K_4: BLUE_GRAY,
+    pg.K_5: RED,
+    pg.K_6: BROWN,
+    pg.K_7: OLIVE,
+    pg.K_8: DARK_PURPLE,
+    pg.K_9: ORANGE
+}
+
 
 def load_screen():
     """
@@ -58,19 +71,30 @@ def highlight_moves_squares(valid_moves: List[Tuple[int, int]]):
         valid_moves (List[Tuple[int, int]]): List of coordinates (row, col) representing valid moves.
     """
     surface = pg.Surface(SQ_SIZE)
-    surface.set_alpha(60)
+    surface.set_alpha(120)
     surface.fill(GREEN)
     for move in valid_moves:
         WIN.blit(surface, (move[1] * SQ_SIZE[0], move[0] * SQ_SIZE[1]))
 
 
-def draw_window(chess_engine: ChessEngine):
+def draw_board(selected_color: tuple | str):
+    if selected_color == "image":
+        WIN.blit(BOARD, (0, 0))
+    else:
+        for r in range(DIMENSION):
+            for c in range(DIMENSION):
+                square_color = selected_color if (r+c) % 2 == 1 else WHITE
+                pg.draw.rect(WIN, square_color, pg.Rect(c * SQ_SIZE[0], r * SQ_SIZE[1], SQ_SIZE[0], SQ_SIZE[1]))
+
+
+def draw_window(chess_engine: ChessEngine, selected_color: tuple | str):
     """
     Draw the entire game window, including the chessboard and pieces.
     Args:
         chess_engine (ChessEngine): The instance of the ChessEngine class representing the game state.
+        selected_color (tuple | str): the board color
     """
-    WIN.blit(BOARD, (0, 0))
+    draw_board(selected_color)
     if chess_engine.selected_square != ():
         highlight_selected_square(chess_engine.selected_square)
         if chess_engine.available_moves:
@@ -105,6 +129,7 @@ def main():
 
     is_check = False
     game_check_time = 0
+    selected_color = KEY_COLOR_MAPPING.get(pg.K_0)
 
     while run:
         clock.tick(FPS)
@@ -121,6 +146,19 @@ def main():
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_q:
                     chess_engine.undo_move()
+
+                elif event.key == pg.K_EQUALS:
+                    depth = chess_engine.increase_depth()
+                    draw_text(f"{depth}")
+
+                elif event.key == pg.K_MINUS:
+                    depth = chess_engine.decrease_depth()
+                    draw_text(f"{depth}")
+
+                elif event.key in KEY_COLOR_MAPPING:
+                    selected_color = KEY_COLOR_MAPPING[event.key]
+                    chess_engine.board_change = True
+
             elif not chess_engine.is_ai_turn() and event.type == pg.MOUSEBUTTONDOWN:
                 chess_engine.on_board_click((event.pos[1] // SQ_SIZE[1], event.pos[0] // SQ_SIZE[0]))
 
@@ -132,7 +170,7 @@ def main():
                 is_check = False
 
         if chess_engine.board_change:
-            draw_window(chess_engine)
+            draw_window(chess_engine, selected_color)
             chess_engine.board_change = False
 
         if chess_engine.moving_update:
