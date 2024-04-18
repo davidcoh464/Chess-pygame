@@ -31,7 +31,8 @@ class Minimax:
         Find the best move for the current board state using Minimax algorithm.
         """
         self._counter = 0
-        self._minimax(depth=self._max_depth, maximizing_player=self._board.is_white_turn(),
+        # self._minimax(depth=self._max_depth, maximizing_player=self._board.is_white_turn(), alpha=-MAX_INT32, beta=MAX_INT32)
+        self._negamax(depth=self._max_depth, color=1 if self._board.is_white_turn() else -1,
                       alpha=-MAX_INT32, beta=MAX_INT32)
         print(self._counter)
 
@@ -82,6 +83,42 @@ class Minimax:
                 if alpha >= beta:
                     break
             return beta
+
+    def _negamax(self, depth: int, color: int, alpha, beta):
+        """
+        Recursive function implementing the Negamax search algorithm.
+        Args:
+            depth (int): The current depth of the search.
+            color (int): The sign representing the player's turn (+1 for white, -1 for black).
+            alpha (int): The best value that the maximizing player currently can guarantee.
+            beta (int): The best value that the minimizing player currently can guarantee.
+        Returns:
+            int: The evaluated score of the current position.
+        """
+        self._counter += 1
+
+        if self._stop_event.is_set():
+            return 0
+
+        if depth <= 0:
+            return color * self._evaluation.evaluate_board()
+
+        all_moves = self._board.get_all_moves()
+        if len(all_moves) == 0:
+            return color * self._evaluation.evaluate_board()
+
+        random.shuffle(all_moves)
+        for move in all_moves:
+            self.move_piece(move)
+            score = -self._negamax(depth - 1, -color, -beta, -alpha)
+            self.undo_move()
+            if score > alpha:
+                alpha = score
+                if depth == self._max_depth:
+                    self.best_move = move
+            if alpha >= beta:
+                break
+        return alpha
 
     def move_piece(self, move):
         """
